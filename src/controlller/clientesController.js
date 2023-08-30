@@ -1,7 +1,7 @@
 
 
 import { Router } from "express";
-import { AlterarCliente, InserirCliente, ListarCliente, Pesquisa, RemoverCliente } from "../repository/clientesRepository.js";
+import { AlterarCliente, InserirCliente, ListarCliente, PesquisaNome, RemoverCliente } from "../repository/clientesRepository.js";
 
 const endpoints = Router()
 
@@ -48,7 +48,7 @@ endpoints.get('/cliente/:nome', async (req, resp) => {
 
         const {nome} = req.params
 
-        const resposta = await Pesquisa(nome)
+        const resposta = await PesquisaNome(nome)
 
         resp.send(resposta)
 

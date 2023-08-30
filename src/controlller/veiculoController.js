@@ -1,4 +1,4 @@
-import {alterar, consultar, deletar, inserir} from '../repository/veiculoRepository.js' 
+import {AlterarVeiculo, DeletarVeiculo, InserirVeiculo, ListarVeiculo, PesquisarVeiculo} from '../repository/veiculoRepository.js' 
 
 import { Router } from "express";
 
@@ -13,17 +13,17 @@ endpoints.post('/veiculo', async (req, resp) => {
         if (!veiculo.modelo)
           throw new Error('Modelo é obrigatório.');
     
-        if (!isNaN(veiculo.ano))
+        if (isNaN(veiculo.ano))
           throw new Error('Ano inválido.')
         
-        let placa = await consultar(veiculo.placa);
+        const placa = await PesquisarVeiculo(veiculo.placa);
 
         if (placa.length != 0)
           throw new Error('Placa já cadastrada.');
         
         
-        let r = await inserir(veiculo);
-        resp.send(r);
+        const resposta = await InserirVeiculo(veiculo);
+        resp.send(resposta);
 
     }catch(err){
         resp.status(500).send({
@@ -33,28 +33,43 @@ endpoints.post('/veiculo', async (req, resp) => {
 })
 
 
-endpoints.get('/veiculos', async (req, resp) => {  //http://localhost:5000/veiculos?busca=h
-try{
-    const list = req.query.busca
-
-    const resposta = await consultar(list)
-
-    resp.send(resposta)
-
-}catch(err){
-    resp.status(500).send({
-        erro: err.message
-    })
-}
-})
-
-endpoints.put('/veiculo', async (req,resp) => {
+endpoints.get('/veiculos', async (req, resp) => { 
     try{
 
-        const alt = req.query.id
-        const alt2 = req.body
+        const resposta = await ListarVeiculo()
 
-        const resposta = await alterar(alt, alt2)
+        resp.send(resposta)
+
+    }catch(err){
+        resp.status(500).send({
+            erro: err.message
+        })
+    }
+})
+
+
+endpoints.get('/veiculos/:nome', async (req, resp) => { 
+    try{
+        const {nome} = req.params
+
+        const resposta = await PesquisarVeiculo(nome)
+
+        resp.send(resposta)
+
+    }catch(err){
+        resp.status(500).send({
+            erro: err.message
+        })
+    }
+})
+
+endpoints.put('/veiculo/:id', async (req,resp) => {
+    try{
+
+        const {id} = req.params
+        const veiculo = req.body
+
+        const resposta = await AlterarVeiculo(id, veiculo)
 
         resp.send({linhas: resposta})
 
@@ -66,14 +81,14 @@ endpoints.put('/veiculo', async (req,resp) => {
 })
 
 
-endpoints.delete('/veiculo', async (req,resp) => {
+endpoints.delete('/veiculo/:id', async (req,resp) => {
     try{
 
-        const del = req.query.id
+        const {id} = req.params
 
-        const resposta = await deletar(del)
+        const resposta = await DeletarVeiculo(id)
 
-        resp.status(204).send()
+        resp.send({linhas: resposta})
 
     }catch(err){
         resp.status(500).send({
@@ -81,4 +96,6 @@ endpoints.delete('/veiculo', async (req,resp) => {
         })
     }
 })
-export default endpoints
+
+
+export default endpoints;

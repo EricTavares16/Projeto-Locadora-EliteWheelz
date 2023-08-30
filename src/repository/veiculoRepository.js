@@ -1,10 +1,10 @@
 import {con} from "./connection.js"
 
 
-export async function inserir(veiculo) {
+export async function InserirVeiculo(veiculo) {
     const comando = `
-      insert into TB_VEICULO (ID_TIPO_VEICULO, NM_MODELO, DS_MARCA, DS_ANO, DS_PLACA) 
-                      values (?, ?, ?, ?, ?)
+      INSERT INTO TB_VEICULO (ID_TIPO_VEICULO, DS_MODELO, DS_MARCA, NR_ANO, DS_PLACA) 
+                      VALUES (?, ?, ?, ?, ?)
   `
 
     const [resp] = await con.query(comando,
@@ -21,21 +21,40 @@ export async function inserir(veiculo) {
 }
 
 
-export async function consultar(busca) {
+export async function ListarVeiculo () {
+    
+    const comando = 
+        ` SELECT    ve.ID_VEICULO           AS Id,
+                    ve.ID_TIPO_VEICULO      AS TipoVeiculo,
+                    tv.DS_TIPO              AS tipo,
+                    ve.DS_MODELO            AS modelo,
+                    ve.DS_MARCA             AS marca,
+                    ve.NR_ANO               AS ano,
+                    ve.DS_PLACA             AS placa      
+            FROM TB_VEICULO                 AS VE
+            INNER JOIN TB_TIPO_VEICULO      AS tv ON tv.ID_TIPO_VEICULO = ve.ID_TIPO_VEICULO 
+    `
+
+    const [resposta] = await con.query (comando)
+    return resposta
+}
+
+
+export async function PesquisarVeiculo(busca) {
     let comando = `
-        SELECT ve.ID,
-        ve.ID_TIPO_VEICULO AS idTipoVeiculo,
-        tv.DS_TIPO_VEICULO AS tipo,
-        ve.NM_MODELO       AS modelo,
-        ve.DS_MARCA        AS marca,
-        ve.DS_ANO          AS ano,
-        ve.DS_PLACA        AS placa
-    FROM TB_VEICULO ve
-    INNER JOIN tb_tipo_veiculo tv ON tv.ID_TIPO_VEICULO = ve.ID_TIPO_VEICULO
-    WHERE ve.NM_MODELO LIKE ?
+        SELECT  ve.ID_VEICULO           AS Id,
+                ve.ID_TIPO_VEICULO      AS TipoVeiculo,
+                tv.DS_TIPO              AS tipo,
+                ve.DS_MODELO            AS modelo,
+                ve.DS_MARCA             AS marca,
+                ve.NR_ANO               AS ano,
+                ve.DS_PLACA             AS placa
+        FROM TB_VEICULO                 AS ve
+        INNER JOIN TB_TIPO_VEICULO      as tv ON tv.ID_TIPO_VEICULO = ve.ID_TIPO_VEICULO
+    WHERE ve.DS_MODELO LIKE ?
     OR ve.DS_MARCA LIKE ?
     OR ve.DS_PLACA LIKE ?
-    ORDER BY ve.ID
+    ORDER BY ve.ID_VEICULO
   `
 
     let [dados] = await con.query(comando, ['%' + busca + '%', '%' + busca + '%', '%' + busca + '%'])
@@ -43,15 +62,15 @@ export async function consultar(busca) {
 }
 
 
-export async function alterar(id, veiculo) {
+export async function AlterarVeiculo(id, veiculo) {
     let comando = `
-      update tb_veiculo 
-         set ID_TIPO_VEICULO = ?,
-             NM_MODELO       = ?,
-             DS_MARCA        = ?,
-             DS_ANO          = ?,
-             DS_PLACA        = ?
-       where ID      = ?
+      UPDATE TB_VEICULO
+            SET ID_TIPO_VEICULO = ?,
+                DS_MODELO       = ?,
+                DS_MARCA        = ?,
+                NR_ANO          = ?,
+                DS_PLACA        = ?
+        WHERE ID_VEICULO        = ?
   `
 
     let [resp] = await con.query(comando,
@@ -68,11 +87,10 @@ export async function alterar(id, veiculo) {
 }
 
 
-
-export async function deletar(id) {
+export async function DeletarVeiculo(id) {
     let comando = `
-      delete from TB_VEICULO 
-            where ID = ?
+      DELETE FROM TB_VEICULO 
+            WHERE ID_VEICULO = ?
   `
 
     let [resp] = await con.query(comando, [id]);
